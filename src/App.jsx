@@ -31,10 +31,27 @@ function App() {
   // USERS
   // =========================================================
 
-  const [users, setUsers] = useState(() => {
-    const savedUsers = localStorage.getItem('users')
-    return savedUsers ? JSON.parse(savedUsers) : []
-  })
+ 
+const [users, setUsers] = useState(() => {
+  const savedUsers = localStorage.getItem('users')
+
+  if (savedUsers) {
+    const parsedUsers = JSON.parse(savedUsers)
+
+    if (parsedUsers.length > 0) {
+      return parsedUsers
+    }
+  }
+
+  return [
+    {
+      id: 1,
+      name: 'Demo Admin',
+      membershipId: 'ADMIN001',
+      role: 'Admin'
+    }
+  ]
+})
 
   const [name, setName] = useState('')
   const [membershipId, setMembershipId] = useState('')
