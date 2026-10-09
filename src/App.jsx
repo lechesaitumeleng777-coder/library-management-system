@@ -47,7 +47,7 @@ const [users, setUsers] = useState(() => {
     {
       id: 1,
       name: 'Demo Admin',
-      membershipId: 'ADMIN001',
+      membershipId: '001',
       role: 'Admin'
     }
   ]
