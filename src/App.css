@@ -1,0 +1,676 @@
+/* =========================================================
+   LIBRARY MANAGEMENT SYSTEM
+   Main Application Styles
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background: #f4f7fb;
+  color: #1f2937;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* =========================================================
+   APP
+   ========================================================= */
+
+.app {
+  min-height: 100vh;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.header {
+  background: linear-gradient(135deg, #163a5f, #245b89);
+  color: white;
+  padding: 30px 6% 25px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.15);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.header > p {
+  margin: 7px 0 0;
+  color: #dbeafe;
+  font-size: 14px;
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+.nav {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.nav button {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #eaf3ff;
+  padding: 10px 17px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.nav button:hover {
+  background: rgba(255, 255, 255, 0.17);
+  transform: translateY(-1px);
+}
+
+.nav button.active {
+  background: white;
+  color: #163a5f;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* =========================================================
+   MAIN CONTAINER
+   ========================================================= */
+
+.container {
+  width: min(1100px, 92%);
+  margin: 35px auto 60px;
+}
+
+/* =========================================================
+   PAGE HEADINGS
+   ========================================================= */
+
+.page-heading {
+  margin-bottom: 25px;
+}
+
+.page-heading h2,
+.section-heading h2 {
+  margin: 4px 0 6px;
+  color: #172b4d;
+  font-size: 24px;
+}
+
+.page-heading p {
+  margin: 0;
+  color: #64748b;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #3b6ea5;
+}
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.stat-card {
+  background: white;
+  border: 1px solid #e5eaf0;
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #edf5ff;
+  font-size: 22px;
+}
+
+.stat-card h3 {
+  margin: 0 0 5px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.stat-card p {
+  margin: 0;
+  color: #172b4d;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.stat-card.low-stock {
+  border-color: #f3d4d4;
+}
+
+.stat-card.low-stock .stat-icon {
+  background: #fff2f2;
+}
+
+/* =========================================================
+   PANELS
+   ========================================================= */
+
+.panel {
+  background: white;
+  border: 1px solid #e5eaf0;
+  border-radius: 14px;
+  padding: 26px;
+  margin-bottom: 22px;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+}
+
+.panel > h2 {
+  margin-top: 0;
+  color: #172b4d;
+}
+
+.dashboard-panel {
+  margin-bottom: 0;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+/* =========================================================
+   FORMS
+   ========================================================= */
+
+form {
+  display: grid;
+  gap: 10px;
+}
+
+label {
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 5px;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid #d6dde7;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f2937;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+input::placeholder {
+  color: #9aa6b2;
+}
+
+input:focus,
+select:focus {
+  border-color: #3b6ea5;
+  box-shadow: 0 0 0 3px rgba(59, 110, 165, 0.1);
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+form button,
+.button-group button,
+.login-status button {
+  border: none;
+  background: #245b89;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+form button:hover,
+.button-group button:hover,
+.login-status button:hover {
+  background: #163a5f;
+  transform: translateY(-1px);
+}
+
+form button[type="button"] {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+form button[type="button"]:hover {
+  background: #cbd5e1;
+}
+
+/* =========================================================
+   BOOKS
+   ========================================================= */
+
+.book-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.book-card {
+  border: 1px solid #e4e9ef;
+  border-radius: 12px;
+  padding: 20px;
+  background: #fff;
+  transition: 0.2s ease;
+}
+
+.book-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+.book-card h3,
+.user-card h3 {
+  margin: 0 0 12px;
+  color: #172b4d;
+  font-size: 18px;
+}
+
+.book-card p,
+.user-card p {
+  margin: 7px 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.book-card strong,
+.user-card strong {
+  color: #334155;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.button-group button {
+  font-size: 12px;
+  padding: 8px 11px;
+}
+
+.button-group button:nth-child(2) {
+  background: #b23b3b;
+}
+
+.button-group button:nth-child(2):hover {
+  background: #922f2f;
+}
+
+.low-stock-book {
+  border: 1px solid #f1caca;
+  background: #fff8f8;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.low-stock-book h3 {
+  margin: 0 0 5px;
+  color: #8f2d2d;
+}
+
+.low-stock-book p {
+  margin: 5px 0;
+  color: #7f1d1d;
+}
+
+.low-stock-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.stock-warning {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #f0d7d7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stock-warning span {
+  font-size: 12px;
+  color: #7f1d1d;
+}
+
+.stock-warning strong {
+  color: #b23b3b;
+}
+
+/* =========================================================
+   QUICK ACTIONS
+   ========================================================= */
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.quick-actions button {
+  border: 1px solid #dce5ef;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  text-align: left;
+  color: #172b4d;
+  transition: 0.2s ease;
+}
+
+.quick-actions button:hover {
+  background: #edf5ff;
+  border-color: #b9cee3;
+  transform: translateY(-2px);
+}
+
+.quick-actions button > span {
+  font-size: 22px;
+}
+
+.quick-actions strong,
+.quick-actions small {
+  display: block;
+}
+
+.quick-actions small {
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+/* =========================================================
+   STATUS BADGES
+   ========================================================= */
+
+.status-badge {
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-badge.warning {
+  background: #fff1f1;
+  color: #a33434;
+}
+
+.text-button {
+  border: none;
+  background: transparent;
+  color: #245b89;
+  font-weight: 700;
+  padding: 5px;
+}
+
+.text-button:hover {
+  color: #163a5f;
+}
+
+/* =========================================================
+   USERS
+   ========================================================= */
+
+.user-section {
+  padding: 20px 0;
+  border-bottom: 1px solid #e9edf2;
+}
+
+.user-section:last-child {
+  border-bottom: none;
+}
+
+.user-section h3 {
+  color: #172b4d;
+  margin-top: 0;
+}
+
+.user-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.user-card {
+  border: 1px solid #e4e9ef;
+  border-radius: 12px;
+  padding: 18px;
+  background: #fff;
+}
+
+.login-status {
+  padding: 18px;
+  border-radius: 10px;
+  background: #eef7f2;
+  border: 1px solid #cce8d8;
+}
+
+.login-status h3 {
+  margin-top: 0;
+  color: #21613c;
+}
+
+.login-status p {
+  color: #486052;
+}
+
+/* =========================================================
+   TRANSACTIONS
+   ========================================================= */
+
+.transaction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.transaction {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border: 1px solid #e4e9ef;
+  border-radius: 10px;
+  background: #fafbfd;
+}
+
+.transaction-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #edf5ff;
+  font-size: 19px;
+}
+
+.transaction-info {
+  flex: 1;
+}
+
+.transaction h3 {
+  margin: 0 0 6px;
+  color: #172b4d;
+  font-size: 15px;
+}
+
+.transaction p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.transaction-type {
+  font-weight: 700;
+}
+
+.transaction-type.borrowed {
+  color: #a33434;
+}
+
+.transaction-type.stock {
+  color: #28704b;
+}
+
+.transaction-date {
+  color: #94a3b8;
+  font-size: 11px;
+  text-align: right;
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 800px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .book-list,
+  .user-list,
+  .low-stock-grid,
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .transaction {
+    align-items: flex-start;
+  }
+
+  .transaction-date {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .header {
+    padding: 25px 5%;
+  }
+
+  .header h1 {
+    font-size: 22px;
+  }
+
+  .nav {
+    flex-direction: column;
+  }
+
+  .nav button {
+    width: 100%;
+  }
+
+  .container {
+    width: 94%;
+    margin-top: 25px;
+  }
+
+  .panel {
+    padding: 18px;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+} 
+
+/* Make login screen text lighter */
+.login-container h1,
+.in-container h2,
+.login-container h3,
+.login-container p,
+.login-container label {
+  color: #f1f5f9;
+}
+
+/* Make the small text softer */
+.login-container p {
+  color: #d1d5db;
+}
+
+/* Make the membership ID label stand out */
+.login-container label {
+  color: #e5e7eb;
+}
+
+/* Make login screen writing lighter */
+.login-card h1 {
+  color: #f8fafc;
+}
+
+.login-card .login-subtitle {
+  color: #e2e8f0;
+}
+
+.login-card label {
+  color: #f1f5f9;
+}
+
+.login-card .login-footer p {
+  color: #f1f5f9;
+}
+
+.login-card .login-footer small {
+  color: #e2e8f0;
+}
