@@ -14,10 +14,32 @@ function App() {
   // BOOKS
   // =========================================================
 
-  const [books, setBooks] = useState(() => {
-    const savedBooks = localStorage.getItem('books')
-    return savedBooks ? JSON.parse(savedBooks) : []
-  })
+
+const [books, setBooks] = useState([])
+const [booksLoading, setBooksLoading] = useState(true)
+
+useEffect(() => {
+  const fetchBooks = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/books')
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch books')
+      }
+
+      const data = await response.json()
+      setBooks(data)
+    } catch (error) {
+      console.error('Error loading books:', error)
+      alert('Could not load books from the database.')
+    } finally {
+      setBooksLoading(false)
+    }
+  }
+
+  fetchBooks()
+}, [])
+
 
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
@@ -32,26 +54,7 @@ function App() {
   // =========================================================
 
  
-const [users, setUsers] = useState(() => {
-  const savedUsers = localStorage.getItem('users')
-
-  if (savedUsers) {
-    const parsedUsers = JSON.parse(savedUsers)
-
-    if (parsedUsers.length > 0) {
-      return parsedUsers
-    }
-  }
-
-  return [
-    {
-      id: 1,
-      name: 'Demo Admin',
-      membershipId: '001',
-      role: 'Admin'
-    }
-  ]
-})
+const [users, setUsers] = useState([])
 
   const [name, setName] = useState('')
   const [membershipId, setMembershipId] = useState('')
@@ -85,12 +88,6 @@ const [users, setUsers] = useState(() => {
   // LOCAL STORAGE
   // =========================================================
 
-  useEffect(() => {
-    localStorage.setItem(
-      'books',
-      JSON.stringify(books)
-    )
-  }, [books])
 
 
   useEffect(() => {
@@ -101,12 +98,63 @@ const [users, setUsers] = useState(() => {
   }, [users])
 
 
-  useEffect(() => {
-    localStorage.setItem(
-      'transactions',
-      JSON.stringify(transactions)
-    )
-  }, [transactions])
+useEffect(() => {
+  async function loadTransactions() {
+    try {
+      const response = await fetch(
+        'http://localhost:5000/transactions'
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to load transactions')
+      }
+
+      const data = await response.json()
+
+      setTransactions(data.map(item => ({
+        id: item.id,
+        bookTitle: item.book_title,
+        type: item.transaction_type,
+        quantity: item.quantity,
+        borrower: item.borrower_name,
+        membershipId: item.user_id || '',
+        date: item.transaction_date
+          ? new Date(item.transaction_date).toLocaleString()
+          : ''
+      })))
+    } catch (error) {
+      console.error('Error loading transactions:', error)
+    }
+  }
+
+  loadTransactions()
+}, [])
+
+useEffect(() => {
+  async function loadUsers() {
+    try {
+      const response = await fetch('http://localhost:5000/users')
+
+      if (!response.ok) {
+        throw new Error('Failed to load users')
+      }
+
+      const data = await response.json()
+
+      setUsers(data.map(user => ({
+        id: user.id,
+        name: user.name,
+        membershipId: user.membership_id,
+        role: user.role
+      })))
+    } catch (error) {
+      console.error('Error loading users:', error)
+      alert('Could not load users from the database.')
+    }
+  }
+
+  loadUsers()
+}, [])
 
 
   // =========================================================
@@ -127,42 +175,68 @@ const [users, setUsers] = useState(() => {
 
 
   // =========================================================
+  // API HELPER
+  // =========================================================
+
+  async function getApiError(response, fallbackMessage) {
+    try {
+      const data = await response.json()
+      return data.message || data.error || fallbackMessage
+    } catch {
+      return fallbackMessage
+    }
+  }
+
+
+  // =========================================================
   // BOOK FUNCTIONS
   // =========================================================
 
-  function addBook(e) {
+  async function addBook(e) {
     e.preventDefault()
 
-    if (
-      !title.trim() ||
-      !author.trim() ||
-      !genre.trim() ||
-      !isbn.trim() ||
-      quantity === ''
-    ) {
+    if (!title.trim() || !author.trim() || !genre.trim() || !isbn.trim() || quantity === '') {
       alert('Please complete all book details.')
       return
     }
 
-    const newBook = {
-      id: Date.now(),
-      title: title.trim(),
-      author: author.trim(),
-      genre: genre.trim(),
-      isbn: isbn.trim(),
-      quantity: Number(quantity)
+    const parsedQuantity = Number(quantity)
+    if (!Number.isInteger(parsedQuantity) || parsedQuantity < 0) {
+      alert('Quantity must be a whole number that is zero or greater.')
+      return
     }
 
-    setBooks([
-      ...books,
-      newBook
-    ])
+    try {
+      const response = await fetch('http://localhost:5000/books', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          author: author.trim(),
+          genre: genre.trim(),
+          isbn: isbn.trim(),
+          quantity: parsedQuantity
+        })
+      })
 
-    setTitle('')
-    setAuthor('')
-    setGenre('')
-    setIsbn('')
-    setQuantity('')
+      if (!response.ok) {
+        throw new Error(await getApiError(response, 'Could not add the book.'))
+      }
+
+      const booksResponse = await fetch('http://localhost:5000/books')
+      if (!booksResponse.ok) throw new Error('Book was added, but the list could not be refreshed.')
+      setBooks(await booksResponse.json())
+
+      setTitle('')
+      setAuthor('')
+      setGenre('')
+      setIsbn('')
+      setQuantity('')
+      alert('Book added successfully.')
+    } catch (error) {
+      console.error('Error adding book:', error)
+      alert(error.message || 'Could not add the book. Make sure the backend and MySQL are running.')
+    }
   }
 
 
@@ -178,56 +252,64 @@ const [users, setUsers] = useState(() => {
   }
 
 
-  function updateBook(e) {
+  async function updateBook(e) {
     e.preventDefault()
 
-    if (
-      !title.trim() ||
-      !author.trim() ||
-      !genre.trim() ||
-      !isbn.trim() ||
-      quantity === ''
-    ) {
+    if (!title.trim() || !author.trim() || !genre.trim() || !isbn.trim() || quantity === '') {
       alert('Please complete all book details.')
       return
     }
 
-    setBooks(
-      books.map(book =>
-        book.id === editingId
-          ? {
-              ...book,
-              title: title.trim(),
-              author: author.trim(),
-              genre: genre.trim(),
-              isbn: isbn.trim(),
-              quantity: Number(quantity)
-            }
-          : book
-      )
-    )
+    const parsedQuantity = Number(quantity)
+    if (!Number.isInteger(parsedQuantity) || parsedQuantity < 0) {
+      alert('Quantity must be a whole number that is zero or greater.')
+      return
+    }
 
-    cancelBookEdit()
+    try {
+      const response = await fetch(`http://localhost:5000/books/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          author: author.trim(),
+          genre: genre.trim(),
+          isbn: isbn.trim(),
+          quantity: parsedQuantity
+        })
+      })
+
+      if (!response.ok) throw new Error(await getApiError(response, 'Could not update the book.'))
+
+      const booksResponse = await fetch('http://localhost:5000/books')
+      if (!booksResponse.ok) throw new Error('Book was updated, but the list could not be refreshed.')
+      setBooks(await booksResponse.json())
+      cancelBookEdit()
+      alert('Book updated successfully.')
+    } catch (error) {
+      console.error('Error updating book:', error)
+      alert(error.message || 'Could not update the book. Make sure the backend and MySQL are running.')
+    }
   }
 
 
-  function deleteBook(id) {
-
-    const book = books.find(
-      book => book.id === id
-    )
-
+  async function deleteBook(id) {
+    const book = books.find(book => book.id === id)
     if (!book) return
 
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${book.title}"?`
-    )
-
+    const confirmed = window.confirm(`Are you sure you want to delete "${book.title}"?`)
     if (!confirmed) return
 
-    setBooks(
-      books.filter(book => book.id !== id)
-    )
+    try {
+      const response = await fetch(`http://localhost:5000/books/${id}`, { method: 'DELETE' })
+      if (!response.ok) throw new Error(await getApiError(response, 'Could not delete the book.'))
+      setBooks(currentBooks => currentBooks.filter(item => item.id !== id))
+      if (editingId === id) cancelBookEdit()
+      alert('Book deleted successfully.')
+    } catch (error) {
+      console.error('Error deleting book:', error)
+      alert(error.message || 'Could not delete the book. Make sure the backend and MySQL are running.')
+    }
   }
 
 
@@ -247,145 +329,255 @@ const [users, setUsers] = useState(() => {
   // STOCK
   // =========================================================
 
-  function addStock(id) {
 
-    const book = books.find(
-      book => book.id === id
-    )
+async function addStock(id) {
+  const book = books.find(book => book.id === id)
+  if (!book) return
 
-    if (!book) return
-
-    setBooks(
-      books.map(book =>
-        book.id === id
-          ? {
-              ...book,
-              quantity:
-                Number(book.quantity) + 1
-            }
-          : book
-      )
-    )
-
-    setTransactions([
-      ...transactions,
+  try {
+    // 1. Update the quantity in MySQL
+    const response = await fetch(
+      `http://localhost:5000/books/${id}`,
       {
-        id: Date.now(),
-        bookTitle: book.title,
-        type: 'Stock Added',
-        quantity: 1,
-        date: new Date().toLocaleString()
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: book.title,
+          author: book.author,
+          genre: book.genre || '',
+          isbn: book.isbn || '',
+          quantity: Number(book.quantity) + 1
+        })
       }
-    ])
-  }
-
-
-  // =========================================================
-  // BORROW BOOK
-  // =========================================================
-
-  function borrowBook(id) {
-
-    const book = books.find(
-      book => book.id === id
     )
 
-    if (!book) return
-
-    if (Number(book.quantity) <= 0) {
-
-      alert(
-        'This book is currently out of stock.'
+    if (!response.ok) {
+      throw new Error(
+        await getApiError(response, 'Could not add stock.')
       )
-
-      return
     }
 
-    setBooks(
-      books.map(book =>
-        book.id === id
-          ? {
-              ...book,
-              quantity:
-                Number(book.quantity) - 1
-            }
-          : book
-      )
+    // 2. Save the stock transaction in MySQL
+    const transactionResponse = await fetch(
+      'http://localhost:5000/transactions',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transaction_type: 'Stock Added',
+          book_id: id,
+          book_title: book.title,
+          user_id: null,
+          borrower_name: loggedInUser?.name || 'Unknown',
+          quantity: 1
+        })
+      }
     )
 
-    setTransactions([
-      ...transactions,
+    if (!transactionResponse.ok) {
+      throw new Error(
+        'Stock quantity updated, but the transaction could not be saved.'
+      )
+    }
+
+    // 3. Refresh the books from MySQL
+    const booksResponse = await fetch(
+      'http://localhost:5000/books'
+    )
+
+    if (!booksResponse.ok) {
+      throw new Error(
+        'Stock was updated, but the book list could not refresh.'
+      )
+    }
+
+    setBooks(await booksResponse.json())
+
+    // 4. Refresh the transaction history from MySQL
+    const transactionsResponse = await fetch(
+      'http://localhost:5000/transactions'
+    )
+
+    if (!transactionsResponse.ok) {
+      throw new Error(
+        'Stock was updated, but transaction history could not refresh.'
+      )
+    }
+
+    const data = await transactionsResponse.json()
+
+    setTransactions(data.map(item => ({
+      id: item.id,
+      bookTitle: item.book_title,
+      type: item.transaction_type,
+      quantity: item.quantity,
+      borrower: item.borrower_name,
+      membershipId: item.user_id || '',
+      date: item.transaction_date
+        ? new Date(item.transaction_date).toLocaleString()
+        : ''
+    })))
+
+    alert('Stock added and transaction saved successfully!')
+  } catch (error) {
+    console.error('Error adding stock:', error)
+    alert(
+      error.message ||
+      'Could not add stock. Make sure the backend and MySQL are running.'
+    )
+  }
+}
+
+
+
+async function borrowBook(id) {
+  const book = books.find(book => book.id === id)
+  if (!book) return
+
+  if (Number(book.quantity) <= 0) {
+    alert('This book is currently out of stock.')
+    return
+  }
+
+  try {
+    // 1. Update the book quantity in MySQL
+    const response = await fetch(
+      `http://localhost:5000/books/${id}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: book.title,
+          author: book.author,
+          genre: book.genre || '',
+          isbn: book.isbn || '',
+          quantity: Number(book.quantity) - 1
+        })
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error('Could not update the book quantity.')
+    }
+
+    // 2. Save the borrowing transaction in MySQL
+    const transactionResponse = await fetch(
+      'http://localhost:5000/transactions',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transaction_type: 'Borrowed',
+          book_id: id,
+          book_title: book.title,
+          user_id: null,
+          borrower_name: loggedInUser?.name || 'Unknown',
+          quantity: 1
+        })
+      }
+    )
+
+    if (!transactionResponse.ok) {
+      throw new Error(
+        'The book quantity changed, but the borrowing record could not be saved. Check MySQL before trying again.'
+      )
+    }
+
+    // 3. Refresh the books displayed on the website
+    const booksResponse = await fetch(
+      'http://localhost:5000/books'
+    )
+
+    if (!booksResponse.ok) {
+      throw new Error(
+        'Transaction saved, but the book list could not refresh.'
+      )
+    }
+
+    setBooks(await booksResponse.json())
+
+    // 4. Update the transaction history displayed in React
+    setTransactions(current => [
+      ...current,
       {
         id: Date.now(),
         bookTitle: book.title,
         type: 'Borrowed',
         quantity: 1,
-        borrower:
-          loggedInUser?.name || 'Unknown',
-        membershipId:
-          loggedInUser?.membershipId || '',
+        borrower: loggedInUser?.name || 'Unknown',
+        membershipId: loggedInUser?.membershipId || '',
         date: new Date().toLocaleString()
       }
     ])
 
-    alert(
-      `"${book.title}" has been borrowed successfully.`
-    )
+    alert(`"${book.title}" has been borrowed successfully.`)
+  } catch (error) {
+    console.error('Error borrowing book:', error)
+    alert(error.message || 'Could not borrow the book.')
+  }
+}
+
+
+async function addUser(e) {
+  e.preventDefault()
+
+  if (!name.trim() || !membershipId.trim()) {
+    alert('Please complete all user details.')
+    return
   }
 
+  const membershipExists = users.some(
+    user =>
+      user.membershipId.toLowerCase() ===
+      membershipId.trim().toLowerCase()
+  )
 
-  // =========================================================
-  // USER FUNCTIONS
-  // =========================================================
+  if (membershipExists) {
+    alert('This membership ID already exists.')
+    return
+  }
 
-  function addUser(e) {
+  try {
+    const response = await fetch('http://localhost:5000/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: name.trim(),
+        membershipId: membershipId.trim(),
+        role
+      })
+    })
 
-    e.preventDefault()
+    const data = await response.json()
 
-    if (
-      !name.trim() ||
-      !membershipId.trim()
-    ) {
-      alert(
-        'Please complete all user details.'
-      )
-
-      return
-    }
-
-    const membershipExists =
-      users.some(
-        user =>
-          user.membershipId.toLowerCase() ===
-          membershipId.trim().toLowerCase()
-      )
-
-    if (membershipExists) {
-
-      alert(
-        'This membership ID already exists.'
-      )
-
+    if (!response.ok) {
+      alert(data.message || 'Failed to add user.')
       return
     }
 
     const newUser = {
-      id: Date.now(),
+      id: data.id,
       name: name.trim(),
-      membershipId:
-        membershipId.trim(),
+      membershipId: membershipId.trim(),
       role
     }
 
-    setUsers([
-      ...users,
-      newUser
-    ])
+    setUsers(prevUsers => [...prevUsers, newUser])
 
     setName('')
     setMembershipId('')
     setRole('Member')
+
+    alert('User added successfully!')
+  } catch (error) {
+    console.error('Error adding user:', error)
+    alert('Could not connect to the server. Make sure your backend is running.')
   }
+}
+ 
+
 
 
   function editUser(user) {
@@ -401,95 +593,117 @@ const [users, setUsers] = useState(() => {
     setActiveSection('users')
   }
 
+async function updateUser(e) {
+  e.preventDefault()
 
-  function updateUser(e) {
+  if (!name.trim() || !membershipId.trim()) {
+    alert('Please complete all user details.')
+    return
+  }
 
-    e.preventDefault()
+  const membershipExists = users.some(
+    user =>
+      user.id !== editingUserId &&
+      user.membershipId.toLowerCase() ===
+        membershipId.trim().toLowerCase()
+  )
 
-    if (
-      !name.trim() ||
-      !membershipId.trim()
-    ) {
+  if (membershipExists) {
+    alert('This membership ID already exists.')
+    return
+  }
 
-      alert(
-        'Please complete all user details.'
-      )
+  try {
+    const response = await fetch(
+      `http://localhost:5000/users/${editingUserId}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          membershipId: membershipId.trim(),
+          role
+        })
+      }
+    )
+const responseText = await response.text()
+console.log('Backend response:', responseText)
 
-      return
-    }
+let data
 
-    const membershipExists =
-      users.some(
-        user =>
-          user.id !== editingUserId &&
-          user.membershipId.toLowerCase() ===
-          membershipId.trim().toLowerCase()
-      )
-
-    if (membershipExists) {
-
-      alert(
-        'This membership ID already exists.'
-      )
-
+try {
+  data = JSON.parse(responseText)
+} catch {
+  alert('The backend returned HTML instead of JSON. Check the browser Console.')
+  return
+}
+  
+    if (!response.ok) {
+      alert(data.message || 'Could not update user.')
       return
     }
 
     const updatedUser = {
-      id: editingUserId,
+      id: Number(editingUserId),
       name: name.trim(),
-      membershipId:
-        membershipId.trim(),
+      membershipId: membershipId.trim(),
       role
     }
 
-    setUsers(
-      users.map(user =>
-        user.id === editingUserId
-          ? updatedUser
-          : user
-      )
-    )
+    setUsers(users.map(user =>
+      user.id === Number(editingUserId)
+        ? updatedUser
+        : user
+    ))
 
-    if (
-      loggedInUser?.id === editingUserId
-    ) {
+    if (loggedInUser?.id === Number(editingUserId)) {
       setLoggedInUser(updatedUser)
     }
 
+    alert('User updated successfully!')
     cancelUserEdit()
-  }
+  } catch (error) {
+  console.error('Update user error:', error)
+  alert('Error: ' + error.message)
+}
+}
 
+async function deleteUser(id) {
+  const user = users.find(user => user.id === id)
+  if (!user) return
 
-  function deleteUser(id) {
+  const confirmed = window.confirm(
+    `Are you sure you want to delete "${user.name}"?`
+  )
 
-    const user = users.find(
-      user => user.id === id
+  if (!confirmed) return
+
+  try {
+    const response = await fetch(
+      `http://localhost:5000/users/${id}`,
+      { method: 'DELETE' }
     )
 
-    if (!user) return
+    const data = await response.json()
 
-    const confirmed =
-      window.confirm(
-        `Are you sure you want to delete "${user.name}"?`
-      )
+    if (!response.ok) {
+      alert(data.message || 'Could not delete user.')
+      return
+    }
 
-    if (!confirmed) return
+    setUsers(users.filter(user => user.id !== id))
 
-    setUsers(
-      users.filter(
-        user => user.id !== id
-      )
-    )
-
-    if (
-      loggedInUser?.id === id
-    ) {
-
+    if (loggedInUser?.id === id) {
       setLoggedInUser(null)
       setActiveSection('login')
     }
+
+    alert('User deleted successfully!')
+  } catch (error) {
+    alert('Could not connect to the backend.')
+    console.error(error)
   }
+}
 
 
   function cancelUserEdit() {
